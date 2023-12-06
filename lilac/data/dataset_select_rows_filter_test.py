@@ -38,7 +38,7 @@ def test_filter_by_ids(make_test_data: TestDataMaker) -> None:
   id_filter = (ROWID, 'equals', b'f')
   result = dataset.select_rows(filters=[id_filter])
 
-  assert list(result) == []
+  assert not list(result)
 
 
 def test_filter_greater(make_test_data: TestDataMaker) -> None:

@@ -98,7 +98,7 @@ def make_vector_index(
   spans: list[tuple[PathKey, list[tuple[int, int]]]] = []
   for path_key, vectors in vector_dict.items():
     vector_spans: list[tuple[int, int]] = []
-    for i, vector in enumerate(vectors):
+    for vector in vectors:
       embeddings.append(np.array(vector))
       vector_spans.append((0, 0))
     spans.append((path_key, vector_spans))

@@ -88,4 +88,4 @@ def test_sparse_to_dense_compute_empty() -> None:
       yield x + 1
 
   out = sparse_to_dense_compute(sparse_input, func)
-  assert list(out) == []
+  assert not list(out)

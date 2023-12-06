@@ -82,7 +82,7 @@ class ParquetSource(Source):
       glob_rows: list[tuple[str]] = self._con.execute(
         f'SELECT * FROM GLOB({duckdb_paths})'
       ).fetchall()
-      duckdb_files: list[str] = list(set([row[0] for row in glob_rows]))
+      duckdb_files: list[str] = list({row[0] for row in glob_rows})
       # Sub-sample shards so we don't open too many files.
       num_shards = min(self.pseudo_shuffle_num_shards, len(duckdb_files))
       # The 1.5 multiplier gives some wiggle room for heterogeneous shard sizes, in case one shard

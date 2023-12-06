@@ -193,10 +193,12 @@ class ConceptModelDB(abc.ABC):
 
   def in_sync(self, model: ConceptModel, user: Optional[UserInfo] = None) -> bool:
     """Return True if the model is up to date with the concept."""
-    concept = self._concept_db.get(model.namespace, model.concept_name, user=user)
-    if not concept:
+    if concept := self._concept_db.get(model.namespace,
+                                       model.concept_name,
+                                       user=user):
+      return concept.version == model.version
+    else:
       raise ValueError(f'Concept "{model.namespace}/{model.concept_name}" does not exist.')
-    return concept.version == model.version
 
   def sync(
     self,
@@ -218,8 +220,7 @@ class ConceptModelDB(abc.ABC):
       concept = self._concept_db.get(model.namespace, model.concept_name, user=user)
       if not concept:
         raise ValueError(f'Concept "{model.namespace}/{model.concept_name}" does not exist.')
-      model_updated = model.sync(concept)
-      if model_updated:
+      if model_updated := model.sync(concept):
         self._save(model)
       return model
 
@@ -319,8 +320,7 @@ class DiskConceptModelDB(ConceptModelDB):
     models: list[ConceptModel] = []
     for model_file in model_files:
       embedding_name = os.path.basename(model_file)[: -len('.pkl')]
-      model = self.get(namespace, concept_name, embedding_name, user=user)
-      if model:
+      if model := self.get(namespace, concept_name, embedding_name, user=user):
         models.append(model)
     return models
 
@@ -591,9 +591,7 @@ class DiskConceptDB(ConceptDB):
     }
     for example in draft_examples.values():
       example.draft = DRAFT_MAIN
-      # Remove duplicates in main.
-      main_text_id = main_text_ids.get(example.text)
-      if main_text_id:
+      if main_text_id := main_text_ids.get(example.text):
         del concept.data[main_text_id]
 
     concept.version += 1

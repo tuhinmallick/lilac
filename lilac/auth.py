@@ -76,8 +76,7 @@ def get_session_user(request: Request) -> Optional[UserInfo]:
   """Get the user from the session."""
   if not env('LILAC_AUTH_ENABLED'):
     return None
-  user_info_dict = request.session.get('user', None)
-  if user_info_dict:
+  if user_info_dict := request.session.get('user', None):
     try:
       return UserInfo.model_validate(user_info_dict)
     except ValidationError:
@@ -87,8 +86,7 @@ def get_session_user(request: Request) -> Optional[UserInfo]:
 
 def get_admin_emails() -> list[str]:
   """Return the admin emails."""
-  admin_emails = env('LILAC_AUTH_ADMIN_EMAILS', None)
-  if admin_emails:
+  if admin_emails := env('LILAC_AUTH_ADMIN_EMAILS', None):
     return admin_emails.split(',')
   return []
 

@@ -70,11 +70,7 @@ def compute_split_embeddings(
   def _splitter(doc: str) -> list[TextChunk]:
     if not doc:
       return []
-    if split_fn:
-      return split_fn(doc)
-    else:
-      # Return a single chunk that spans the entire document.
-      return [(doc, (0, len(doc)))]
+    return split_fn(doc) if split_fn else [(doc, (0, len(doc)))]
 
   num_docs = 0
 

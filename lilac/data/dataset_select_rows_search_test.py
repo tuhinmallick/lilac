@@ -1,5 +1,6 @@
 """Tests for dataset.select_rows(searches=[...])."""
 
+
 from typing import ClassVar, Iterable, cast
 
 import numpy as np
@@ -37,7 +38,7 @@ EMBEDDINGS: list[tuple[str, list[float]]] = [
   ('random negative 4', [0.1, 0, 0.4]),
 ]
 
-STR_EMBEDDINGS: dict[str, list[float]] = {text: embedding for text, embedding in EMBEDDINGS}
+STR_EMBEDDINGS: dict[str, list[float]] = dict(EMBEDDINGS)
 
 
 @pytest.fixture(scope='module', autouse=True)

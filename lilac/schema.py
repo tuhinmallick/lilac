@@ -462,16 +462,17 @@ def span(start: int, end: int, metadata: dict[str, Any] = {}) -> Item:
 def lilac_embedding(start: int, end: int, embedding: Optional[np.ndarray]) -> Item:
   """Creates a lilac embedding item, representing a vector with a pointer to a slice of text."""
   # Cast to int; we've had issues where start/end were np.int64, which caused downstream sadness.
-  return span(int(start), int(end), {EMBEDDING_KEY: embedding})
+  return span(start, end, {EMBEDDING_KEY: embedding})
 
 
 def _parse_field_like(field_like: object, dtype: Optional[Union[DataType, str]] = None) -> Field:
   if isinstance(field_like, Field):
     return field_like
   elif isinstance(field_like, dict):
-    fields: dict[str, Field] = {}
-    for k, v in field_like.items():
-      fields[k] = _parse_field_like(v)
+    fields: dict[str, Field] = {
+        k: _parse_field_like(v)
+        for k, v in field_like.items()
+    }
     if isinstance(dtype, str):
       dtype = DataType(dtype)
     return Field(fields=fields or None, dtype=dtype)
@@ -535,9 +536,10 @@ def normalize_path(path: Path) -> PathTuple:
 
 def _str_fields(fields: dict[str, Field], indent: int) -> str:
   prefix = ' ' * indent
-  out: list[str] = []
-  for name, field in fields.items():
-    out.append(f'{prefix}{name}:{_str_field(field, indent=indent + 2)}')
+  out: list[str] = [
+      f'{prefix}{name}:{_str_field(field, indent=indent + 2)}'
+      for name, field in fields.items()
+  ]
   return '\n'.join(out)
 
 
@@ -634,16 +636,15 @@ def _schema_to_arrow_schema_impl(schema: Union[Schema, Field]) -> Union[pa.Schem
 
     if isinstance(schema, Schema):
       return pa.schema(arrow_fields)
-    else:
-      # When nodes have both dtype and children, we add __value__ alongside the fields.
-      if schema.dtype:
-        value_schema = dtype_to_arrow_schema(schema.dtype)
-        if schema.dtype == STRING_SPAN:
-          arrow_fields[SPAN_KEY] = value_schema[SPAN_KEY].type
-        else:
-          arrow_fields[VALUE_KEY] = value_schema
+    # When nodes have both dtype and children, we add __value__ alongside the fields.
+    if schema.dtype:
+      value_schema = dtype_to_arrow_schema(schema.dtype)
+      if schema.dtype == STRING_SPAN:
+        arrow_fields[SPAN_KEY] = value_schema[SPAN_KEY].type
+      else:
+        arrow_fields[VALUE_KEY] = value_schema
 
-      return pa.struct(arrow_fields)
+    return pa.struct(arrow_fields)
 
   field = cast(Field, schema)
   if field.repeated_field:
@@ -796,9 +797,10 @@ def _infer_dtype(value: Item) -> DataType:
 def _infer_field(item: Item, diallow_pedals: bool = False) -> Field:
   """Infer the schema from the items."""
   if isinstance(item, dict):
-    fields: dict[str, Field] = {}
-    for k, v in item.items():
-      fields[k] = _infer_field(cast(Item, v))
+    fields: dict[str, Field] = {
+        k: _infer_field(cast(Item, v))
+        for k, v in item.items()
+    }
     dtype = None
     if VALUE_KEY in fields:
       dtype = fields[VALUE_KEY].dtype

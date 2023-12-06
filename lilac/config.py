@@ -26,9 +26,7 @@ OLD_CONFIG_FILENAME = 'config.yml'
 
 
 def _serializable_path(path: PathTuple) -> Union[str, list]:
-  if len(path) == 1:
-    return path[0]
-  return list(path)
+  return path[0] if len(path) == 1 else list(path)
 
 
 class SignalConfig(BaseModel):
@@ -196,11 +194,12 @@ def get_dataset_config(
   config: Config, dataset_namespace: str, dataset_name: str
 ) -> Optional[DatasetConfig]:
   """Returns the dataset config."""
-  for dataset_config in config.datasets:
-    if dataset_config.namespace == dataset_namespace and dataset_config.name == dataset_name:
-      return dataset_config
-
-  return None
+  return next(
+      (dataset_config for dataset_config in config.datasets
+       if dataset_config.namespace == dataset_namespace
+       and dataset_config.name == dataset_name),
+      None,
+  )
 
 
 def read_config(config_path: Union[str, pathlib.Path]) -> Config:
@@ -212,10 +211,10 @@ def read_config(config_path: Union[str, pathlib.Path]) -> Config:
   contain a single dataset.
   """
   config_ext = pathlib.Path(config_path).suffix
-  if config_ext in ['.yml', '.yaml']:
+  if config_ext in {'.yml', '.yaml'}:
     with open(config_path, 'r') as f:
       config_dict = yaml.safe_load(f)
-  elif config_ext in ['.json']:
+  elif config_ext in {'.json'}:
     with open(config_path, 'r') as f:
       config_dict = json.load(f)
   else:

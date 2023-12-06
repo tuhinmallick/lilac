@@ -72,13 +72,12 @@ def get_rag_retrieval(
     columns=cols, searches=searches, combine_columns=True
   ).data_schema
 
-  # Get the similarity key from the schema.
-  semantic_similarity_key = ''
-  for sim_path, field in select_rows_schema.all_fields:
-    if field.signal and field.signal['signal_name'] == 'semantic_similarity':
-      semantic_similarity_key = '.'.join(sim_path)
-      break
-
+  semantic_similarity_key = next(
+      ('.'.join(sim_path) for sim_path, field in select_rows_schema.all_fields
+       if field.signal and field.signal['signal_name'] == 'semantic_similarity'
+       ),
+      '',
+  )
   # Flatten all of the similarity spans. Similarity results are a tuple of (rowid, spanid, span).
   similarity_results: list[tuple[str, int, Item]] = []
   for row in res:

@@ -104,7 +104,7 @@ def concept_authorization_exception(
 @app.exception_handler(ModuleNotFoundError)
 def module_not_found_error(request: Request, exc: ModuleNotFoundError) -> JSONResponse:
   """Return a 500 JSON response when a module fails to import because of optional imports."""
-  message = 'Oops! You are missing a python dependency. ' + str(exc)
+  message = f'Oops! You are missing a python dependency. {str(exc)}'
   return JSONResponse(status_code=500, content={'detail': message, 'message': message})
 
 

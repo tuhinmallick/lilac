@@ -135,8 +135,10 @@ def slow_process(
   )
 
   filenames = [os.path.basename(filepath)]
-  manifest = SourceManifest(files=filenames, data_schema=data_schema, images=None, source=source)
-  return manifest
+  return SourceManifest(files=filenames,
+                        data_schema=data_schema,
+                        images=None,
+                        source=source)
 
 
 def normalize_items(items: Iterable[Item], fields: dict[str, Field]) -> Item:

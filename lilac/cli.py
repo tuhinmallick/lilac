@@ -80,13 +80,12 @@ def init_command(project_dir: str) -> None:
 )
 def load_command(project_dir: str, config_path: str, overwrite: bool) -> None:
   """Load from a project configuration."""
-  project_dir = project_dir or get_project_dir()
-  if not project_dir:
+  if project_dir := project_dir or get_project_dir():
+    load(project_dir, config_path, overwrite)
+  else:
     raise ValueError(
       '--project_dir or the environment variable `LILAC_PROJECT_DIR` must be defined.'
     )
-
-  load(project_dir, config_path, overwrite)
 
 
 @click.command()

@@ -124,11 +124,7 @@ class Signal(BaseModel):
 
 def _args_key_from_dict(args_dict: dict[str, Any]) -> str:
   args = None
-  args_list: list[str] = []
-  for k, v in args_dict.items():
-    if v:
-      args_list.append(f'{k}={v}')
-
+  args_list: list[str] = [f'{k}={v}' for k, v in args_dict.items() if v]
   args = ','.join(args_list)
   return '' if not args_list else f'({args})'
 
@@ -172,11 +168,10 @@ class TextEmbeddingSignal(TextSignal):
 
 def _vector_signal_schema_extra(schema: dict[str, Any], signal: Type['Signal']) -> None:
   """Add the enum values for embeddings."""
-  embeddings: list[str] = []
-  for s in SIGNAL_REGISTRY.values():
-    if issubclass(s, TextEmbeddingSignal):
-      embeddings.append(s.name)
-
+  embeddings: list[str] = [
+      s.name for s in SIGNAL_REGISTRY.values()
+      if issubclass(s, TextEmbeddingSignal)
+  ]
   if hasattr(signal, 'display_name'):
     schema['title'] = signal.display_name
 
@@ -254,10 +249,10 @@ def get_signal_by_type(signal_name: str, signal_type: Type[Tsignal]) -> Type[Tsi
 
 def get_signals_by_type(signal_type: Type[Tsignal]) -> list[Type[Tsignal]]:
   """Return all signals that match a signal type."""
-  signal_clses: list[Type[Tsignal]] = []
-  for signal_cls in SIGNAL_REGISTRY.values():
-    if issubclass(signal_cls, signal_type):
-      signal_clses.append(signal_cls)
+  signal_clses: list[Type[Tsignal]] = [
+      signal_cls for signal_cls in SIGNAL_REGISTRY.values()
+      if issubclass(signal_cls, signal_type)
+  ]
   return signal_clses
 
 

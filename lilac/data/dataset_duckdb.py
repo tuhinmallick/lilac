@@ -413,11 +413,12 @@ class DatasetDuckDB(Dataset):
           with open_file(os.path.join(root, file)) as f:
             signal_manifest = SignalManifest.model_validate_json(f.read())
           self._signal_manifests.append(signal_manifest)
-          signal_files = [os.path.join(root, f) for f in signal_manifest.files]
-          if signal_files:
+          if signal_files := [
+              os.path.join(root, f) for f in signal_manifest.files
+          ]:
             self._create_view(signal_manifest.parquet_id, signal_files, type='parquet')
         elif file.endswith(LABELS_SQLITE_SUFFIX):
-          label_name = file[0 : -len(LABELS_SQLITE_SUFFIX)]
+          label_name = file[:-len(LABELS_SQLITE_SUFFIX)]
           self._create_view(label_name, [os.path.join(root, file)], type='sqlite')
           # This mirrors the structure in DuckDBDatasetLabel.
           self._label_schemas[label_name] = Schema(
@@ -471,7 +472,7 @@ class DatasetDuckDB(Dataset):
       if manifest.files
     ]
     label_column_selects = []
-    for label_name in self._label_schemas.keys():
+    for label_name in self._label_schemas:
       col_name = escape_col_name(label_name)
       # We use a case here because labels are sparse and we don't want to return an object at all
       # when there is no label.
@@ -498,15 +499,13 @@ class DatasetDuckDB(Dataset):
       [SOURCE_VIEW_NAME]
       + [f'LEFT JOIN {escape_col_name(parquet_id)} USING ({ROWID})' for parquet_id in parquet_ids]
     )
-    view_or_table = 'TABLE'
     # When in a dask worker, always use views to reduce memory overhead.
     if get_is_dask_worker():
       use_views = True
     else:
       use_views = bool(env('DUCKDB_USE_VIEWS', 0) or 0)
 
-    if use_views:
-      view_or_table = 'VIEW'
+    view_or_table = 'VIEW' if use_views else 'TABLE'
     sql_cmd = f"""
       CREATE OR REPLACE {view_or_table} t AS (SELECT {select_sql} FROM {join_sql})
     """
@@ -691,7 +690,7 @@ class DatasetDuckDB(Dataset):
       with open_file(shard_cache_filepath, 'r') as f:
         # Read the first line of the file
         first_line = f.readline()
-      use_jsonl_cache = True if first_line.strip() else False
+      use_jsonl_cache = bool(first_line.strip())
 
     t_cache_table = f't_cache_{shard_id}'
     if use_jsonl_cache:
@@ -783,16 +782,13 @@ class DatasetDuckDB(Dataset):
     start_idx = 0
     if use_jsonl_cache:
       con = self.con.cursor()
-      count_result = con.execute(
-        f"""
+      if count_result := con.execute(f"""
         SELECT COUNT(*) FROM read_json_auto(
           '{jsonl_cache_filepath}',
           IGNORE_ERRORS=true,
           hive_partitioning=false,
           format='newline_delimited')
-        """
-      ).fetchone()
-      if count_result:
+        """).fetchone():
         (start_idx,) = count_result
       con.close()
 

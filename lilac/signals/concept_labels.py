@@ -33,8 +33,8 @@ class ConceptLabelsSignal(TextSignal):
 
   @override
   def setup(self) -> None:
-    concept = self._concept_db.get(self.namespace, self.concept_name, self._user)
-    if concept:
+    if concept := self._concept_db.get(self.namespace, self.concept_name,
+                                       self._user):
       self.version = concept.version
 
   @override

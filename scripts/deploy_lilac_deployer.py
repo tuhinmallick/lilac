@@ -36,18 +36,16 @@ def main() -> None:
     f'--output {requirements_filepath}',
   )
 
-  operations.append(
-    CommitOperationAdd(
-      path_in_repo='requirements.txt',
-      path_or_fileobj=requirements_filepath,
-    )
-  )
-  operations.append(
-    CommitOperationAdd(
-      path_in_repo='app.py',
-      path_or_fileobj=f'{STREAMLIT_APP_DIR}/app.py',
-    )
-  )
+  operations.extend((
+      CommitOperationAdd(
+          path_in_repo='requirements.txt',
+          path_or_fileobj=requirements_filepath,
+      ),
+      CommitOperationAdd(
+          path_in_repo='app.py',
+          path_or_fileobj=f'{STREAMLIT_APP_DIR}/app.py',
+      ),
+  ))
   hf_api.create_commit(
     repo_id=HF_SPACE_ID, repo_type='space', operations=operations, commit_message='Push to HF space'
   )

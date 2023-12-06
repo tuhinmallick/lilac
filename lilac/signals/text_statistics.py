@@ -104,10 +104,7 @@ class TextStatisticsSignal(TextSignal):
         except ValueError:
           ttr = None
         num_chars = len(doc.text)
-        num_non_ascii = 0
-        for c in doc.text:
-          if ord(c) >= 128:
-            num_non_ascii += 1
+        num_non_ascii = sum(1 for c in doc.text if ord(c) >= 128)
         frac_non_ascii = num_non_ascii / num_chars if num_chars else 0
 
         yield {

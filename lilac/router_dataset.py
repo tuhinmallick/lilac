@@ -175,9 +175,7 @@ class SelectRowsResponse(BaseModel):
 def _exclude_none(obj: Any) -> Any:
   if isinstance(obj, dict):
     return {k: _exclude_none(v) for k, v in obj.items() if v is not None}
-  if isinstance(obj, list):
-    return [_exclude_none(v) for v in obj]
-  return copy(obj)
+  return [_exclude_none(v) for v in obj] if isinstance(obj, list) else copy(obj)
 
 
 @router.post('/{namespace}/{dataset_name}/select_rows')
@@ -318,9 +316,7 @@ def get_config(
   """Get the config for the dataset."""
   dataset = get_dataset(namespace, dataset_name)
   config_dict = dataset.config().model_dump(exclude_defaults=True, exclude_none=True)
-  if format == 'yaml':
-    return to_yaml(config_dict)
-  return config_dict
+  return to_yaml(config_dict) if format == 'yaml' else config_dict
 
 
 @router.get('/{namespace}/{dataset_name}/settings')

@@ -101,7 +101,7 @@ class Concept(BaseModel):
 
   def drafts(self) -> list[DraftId]:
     """Gets all the drafts for the concept."""
-    drafts: set[DraftId] = set([DRAFT_MAIN])  # Always return the main draft.
+    drafts: set[DraftId] = {DRAFT_MAIN}
     for example in self.data.values():
       if example.draft:
         drafts.add(example.draft)
@@ -125,9 +125,7 @@ def _get_overall_score(f1_score: float) -> OverallScore:
     return OverallScore.OK
   if f1_score < 0.9:
     return OverallScore.GOOD
-  if f1_score < 0.95:
-    return OverallScore.VERY_GOOD
-  return OverallScore.GREAT
+  return OverallScore.VERY_GOOD if f1_score < 0.95 else OverallScore.GREAT
 
 
 class ConceptMetrics(BaseModel):
@@ -179,7 +177,7 @@ class LogisticEmbeddingModel:
       random_vector = np.random.randn(dim).astype(np.float32)
       random_vector /= np.linalg.norm(random_vector)
       embeddings = np.vstack([embeddings, random_vector])
-      labels.append(False if True in label_set else True)
+      labels.append(True not in label_set)
 
     if len(labels) != len(embeddings):
       raise ValueError(

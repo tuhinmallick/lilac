@@ -1,5 +1,6 @@
 """Implementation-agnostic tests of the Dataset DB API working with projects."""
 
+
 from pathlib import Path
 from typing import ClassVar, Iterable, Optional, cast
 
@@ -35,7 +36,7 @@ EMBEDDINGS: list[tuple[str, list[float]]] = [
   ('c', [1.0, 1.0, 0.0]),
 ]
 
-STR_EMBEDDINGS: dict[str, list[float]] = {text: embedding for text, embedding in EMBEDDINGS}
+STR_EMBEDDINGS: dict[str, list[float]] = dict(EMBEDDINGS)
 
 
 class TestSource(Source):
@@ -129,9 +130,6 @@ def test_load_dataset_updates_project() -> None:
 
 def test_delete_dataset_updates_project() -> None:
   config = read_project_config(get_project_dir())
-
-  # TODO: nsthorat do this.
-  pass
 
 
 def test_compute_signal_updates_project() -> None:
