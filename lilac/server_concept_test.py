@@ -1,4 +1,5 @@
 """Test the public REST API for concepts."""
+
 import os
 import uuid
 from pathlib import Path
@@ -43,7 +44,7 @@ EMBEDDINGS: list[tuple[str, list[float]]] = [
   ('hello world2', [2.0, 1.0, 1.0]),
 ]
 
-STR_EMBEDDINGS: dict[str, list[float]] = {text: embedding for text, embedding in EMBEDDINGS}
+STR_EMBEDDINGS: dict[str, list[float]] = dict(EMBEDDINGS)
 
 
 class TestEmbedding(TextEmbeddingSignal):

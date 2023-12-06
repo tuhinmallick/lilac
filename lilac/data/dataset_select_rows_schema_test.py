@@ -96,7 +96,7 @@ EMBEDDINGS: list[tuple[str, list[float]]] = [
   ('hello world2.', [2.0, 1.0, 1.0]),
 ]
 
-STR_EMBEDDINGS: dict[str, list[float]] = {text: embedding for text, embedding in EMBEDDINGS}
+STR_EMBEDDINGS: dict[str, list[float]] = dict(EMBEDDINGS)
 
 
 class TestEmbedding(TextEmbeddingSignal):
@@ -166,7 +166,7 @@ class AddSpaceSignal(TextSignal):
 
   def compute(self, data: Iterable[RichData]) -> Iterable[Optional[Item]]:
     for text_content in data:
-      yield cast(str, text_content) + ' '
+      yield f'{cast(str, text_content)} '
 
 
 def test_simple_schema(make_test_data: TestDataMaker) -> None:

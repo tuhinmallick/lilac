@@ -109,10 +109,11 @@ def _duckdb_type(dtype: Optional[DataType]) -> str:
 def _duckdb_struct(field: Field) -> str:
   """Convert a field to a duckdb struct."""
   if field.fields:
-    fields: dict[str, str] = {}
-    for name, subfield in field.fields.items():
-      fields[name] = _duckdb_type(subfield.dtype) if name == ROWID else _duckdb_struct(subfield)
-
+    fields: dict[str, str] = {
+        name: _duckdb_type(subfield.dtype)
+        if name == ROWID else _duckdb_struct(subfield)
+        for name, subfield in field.fields.items()
+    }
     # When nodes have both dtype and children, we add __value__ alongside the fields.
     if field.dtype:
       if field.dtype == STRING_SPAN:

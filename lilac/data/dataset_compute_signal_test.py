@@ -129,9 +129,8 @@ EMBEDDINGS: list[tuple[str, Union[list[float], list[list[float]]]]] = [
   ('hello3.', [[0, 0, 1.0]]),
 ]
 
-STR_EMBEDDINGS: dict[str, Union[list[float], list[list[float]]]] = {
-  text: embedding for text, embedding in EMBEDDINGS
-}
+STR_EMBEDDINGS: dict[str, Union[list[float],
+                                list[list[float]]]] = dict(EMBEDDINGS)
 
 
 class TestEmbedding(TextEmbeddingSignal):
@@ -156,7 +155,7 @@ class ComputedKeySignal(TextSignal):
 
   @override
   def compute(self, data: Iterable[RichData]) -> Iterable[Optional[Item]]:
-    for text in data:
+    for _ in data:
       yield 1
 
   def key(self, is_computed_signal: Optional[bool] = False) -> str:

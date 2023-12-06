@@ -52,8 +52,7 @@ def _infer_field(feature_value: Union[Value, dict]) -> Optional[Field]:
   if isinstance(feature_value, dict):
     fields: dict[str, Field] = {}
     for name, value in feature_value.items():
-      field = _infer_field(value)
-      if field:
+      if field := _infer_field(value):
         fields[name] = field
     return Field(fields=fields)
   elif isinstance(feature_value, Value):
@@ -115,15 +114,13 @@ def hf_schema_to_schema(
         fields[feature_name] = Field(dtype=STRING)
         class_labels[feature_name] = feature_value.names
       elif isinstance(feature_value, Translation):
-        # Translations act as categorical strings.
-        language_fields: dict[str, Field] = {}
-        for language in feature_value.languages:
-          language_fields[language] = Field(dtype=STRING)
+        language_fields: dict[str, Field] = {
+            language: Field(dtype=STRING)
+            for language in feature_value.languages
+        }
         fields[feature_name] = Field(fields=language_fields)
-      else:
-        field = _infer_field(feature_value)
-        if field:
-          fields[feature_name] = field
+      elif field := _infer_field(feature_value):
+        fields[feature_name] = field
 
   # Add the split column to the schema.
   fields[HF_SPLIT_COLUMN] = Field(dtype=STRING)
@@ -202,11 +199,7 @@ class HuggingFaceSource(Source):
     filepath = os.path.join(output_dir, out_filename)
     os.makedirs(output_dir, exist_ok=True)
 
-    if self.split:
-      split_names = [self.split]
-    else:
-      split_names = list(self._dataset_dict.keys())
-
+    split_names = [self.split] if self.split else list(self._dataset_dict.keys())
     # DuckDB uses the locals() namespace to enable chaining SQL queries based on Python variables as
     # table names. Since we have an unknown number of splits, we dynamically create names in
     # locals() for DuckDB to refererence.

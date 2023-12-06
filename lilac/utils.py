@@ -154,9 +154,9 @@ def copy_batch(copy_requests: list[CopyRequest]) -> None:
 
       if from_gcs and to_gcs:
         from_bucket.copy_blob(from_gcs_blob, from_bucket, to_object_name)
-      elif from_gcs and not to_gcs:
+      elif from_gcs:
         from_gcs_blob.download_to_filename(copy_request.to_path)
-      elif not from_gcs and to_gcs:
+      else:
         to_gcs_blob = to_bucket.blob(to_object_name)
         to_gcs_blob.upload_from_filename(copy_request.from_path)
 
@@ -165,14 +165,7 @@ def copy_files(copy_requests: Iterable[CopyRequest], input_gcs: bool, output_gcs
   """Copy media files from an input gcs path to an output gcs path."""
   start_time = time.time()
 
-  chunk_size = 1
-  if output_gcs and input_gcs:
-    # When downloading or uploading locally, batching greatly slows down the parallelism as GCS
-    # batching with storage.batch() has no effect.
-    # When copying files locally, storage.batch() has no effect and it's better to run each copy in
-    # separate thread.
-    chunk_size = GCS_COPY_CHUNK_SIZE
-
+  chunk_size = GCS_COPY_CHUNK_SIZE if output_gcs and input_gcs else 1
   batched_copy_requests = chunks(copy_requests, chunk_size)
   with ThreadPoolExecutor() as executor:
     executor.map(copy_batch, batched_copy_requests)
@@ -186,10 +179,8 @@ Tchunk = TypeVar('Tchunk')
 def chunks(iterable: Iterable[Tchunk], size: int) -> Iterable[list[Tchunk]]:
   """Split a list of items into equal-sized chunks. The last chunk might be smaller."""
   it = iter(iterable)
-  chunk = list(itertools.islice(it, size))
-  while chunk:
+  while chunk := list(itertools.islice(it, size)):
     yield chunk
-    chunk = list(itertools.islice(it, size))
 
 
 def delete_file(filepath: str) -> None:
@@ -233,9 +224,7 @@ def is_primitive(obj: object) -> bool:
   """Returns True if the object is a primitive."""
   if isinstance(obj, (str, bytes, np.ndarray, int, float)):
     return True
-  if isinstance(obj, Iterable):
-    return False
-  return True
+  return not isinstance(obj, Iterable)
 
 
 def log(*args: Any) -> None:

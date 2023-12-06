@@ -179,8 +179,11 @@ class TaskManager:
           it_idx = cur_step.it_idx or 0
           estimated_len: int = cur_step.estimated_len or 0
           if cur_step.shard_progresses:
-            it_idx = sum([shard_it_idx for _, (shard_it_idx, _) in cur_step.shard_progresses])
-            estimated_len = sum([shard_len for _, (_, shard_len) in cur_step.shard_progresses])
+            it_idx = sum(shard_it_idx
+                         for _, (shard_it_idx, _) in cur_step.shard_progresses)
+            estimated_len = sum(shard_len
+                                for _, (_,
+                                        shard_len) in cur_step.shard_progresses)
           task.details = (
             (
               f'{it_idx:,}/{estimated_len:,} '
@@ -194,7 +197,7 @@ class TaskManager:
           )
 
           task.step_progress = cur_step.progress
-          task.progress = (sum([step.progress or 0.0 for step in steps])) / len(steps)
+          task.progress = sum(step.progress or 0.0 for step in steps) / len(steps)
           # Don't show an indefinite jump if there are multiple steps.
           if cur_step_id > 0 and task.step_progress is None:
             task.step_progress = 0.0
@@ -313,10 +316,10 @@ class TaskManager:
     """Execute a task."""
     log(f'Scheduling task "{task_id}": "{self._tasks[task_id].name}" with type {type}.')
 
-    task_info = self._tasks[task_id]
-
     if type == 'processes':
       dask_task_id = _dask_task_id(task_id, None)
+      task_info = self._tasks[task_id]
+
       task_future = self._dask_client.submit(
         functools.partial(_execute_task, task, task_info, dask_task_id),
         *args,
@@ -424,9 +427,7 @@ def get_task_manager() -> TaskManager:
 
 def _dask_task_id(task_id: str, shard_id: Optional[int]) -> str:
   """Returns a dask task id."""
-  if shard_id is None:
-    return task_id
-  return f'{task_id}_{shard_id}'
+  return task_id if shard_id is None else f'{task_id}_{shard_id}'
 
 
 def _execute_task(task: TaskFn, task_info: TaskInfo, dask_task_id: str, *args: Any) -> None:
@@ -565,8 +566,7 @@ def get_worker_steps(task_id: TaskId) -> list[TaskStepInfo]:
 
 def set_worker_next_step(task_id: TaskId) -> None:
   """Progresses the worker to the next step."""
-  steps = get_worker_steps(task_id)
-  if steps:
+  if steps := get_worker_steps(task_id):
     cur_step = get_current_step_id(steps)
     steps[cur_step].progress = 1.0
     set_worker_steps(task_id, steps)
@@ -596,8 +596,9 @@ def set_worker_task_progress(
   steps[step_id].shard_progresses = list(shard_progresses_dict.items())
 
   # Compute the total progress for all shards.
-  total_it_idx = sum([shard_it_idx for shard_it_idx, _ in shard_progresses_dict.values()])
-  total_len = sum([shard_len for _, shard_len in shard_progresses_dict.values()])
+  total_it_idx = sum(shard_it_idx
+                     for shard_it_idx, _ in shard_progresses_dict.values())
+  total_len = sum(shard_len for _, shard_len in shard_progresses_dict.values())
 
   steps[step_id].progress = float(total_it_idx) / total_len
 

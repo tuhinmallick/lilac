@@ -169,7 +169,7 @@ def _space_page():
     if hf_storage == 'None':
       hf_space_storage = None
     else:
-      assert hf_storage == 'small' or hf_storage == 'medium' or hf_storage == 'large'
+      assert hf_storage in ['small', 'medium', 'large']
       hf_space_storage = hf_storage
 
     try:
@@ -240,13 +240,12 @@ if st.session_state.get('ds_loaded', False):
 
   st.sidebar.write('##### Splits')
   st.sidebar.table(st.session_state.get('ds_splits', {}))
+elif st.session_state.get('ds_error', None):
+  st.sidebar.subheader(f'Error loading `{dataset_name}`', divider='red', anchor=False)
+  st.sidebar.error(st.session_state.get('ds_error', None))
+  st.sidebar.write(
+    'If the dataset is private, make sure to enter a HuggingFace '
+    'token that has access to the dataset.'
+  )
 else:
-  if st.session_state.get('ds_error', None):
-    st.sidebar.subheader(f'Error loading `{dataset_name}`', divider='red', anchor=False)
-    st.sidebar.error(st.session_state.get('ds_error', None))
-    st.sidebar.write(
-      'If the dataset is private, make sure to enter a HuggingFace '
-      'token that has access to the dataset.'
-    )
-  else:
-    st.sidebar.write('Choose a dataset to see more info..')
+  st.sidebar.write('Choose a dataset to see more info..')

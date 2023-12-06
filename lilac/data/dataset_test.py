@@ -1,5 +1,6 @@
 """Implementation-agnostic tests of the Dataset DB API."""
 
+
 from typing import ClassVar, Iterable, Optional, cast
 
 import numpy as np
@@ -42,7 +43,7 @@ EMBEDDINGS: list[tuple[str, list[float]]] = [
   ('hello world2.', [2.0, 1.0, 1.0]),
 ]
 
-STR_EMBEDDINGS: dict[str, list[float]] = {text: embedding for text, embedding in EMBEDDINGS}
+STR_EMBEDDINGS: dict[str, list[float]] = dict(EMBEDDINGS)
 
 
 class TestEmbedding(TextEmbeddingSignal):
@@ -221,7 +222,7 @@ def test_select_ids_with_limit_and_offset(make_test_data: TestDataMaker) -> None
   assert list(result) == [{ROWID: '9'}]
 
   result = dataset.select_rows([ROWID], offset=9, limit=200)
-  assert list(result) == []
+  assert not list(result)
 
 
 def test_columns(make_test_data: TestDataMaker) -> None:
@@ -564,7 +565,7 @@ class SignalWithQuoteInIt(TextSignal):
 
   @override
   def compute(self, data: Iterable[RichData]) -> Iterable[Optional[Item]]:
-    for d in data:
+    for _ in data:
       yield True
 
 
@@ -577,7 +578,7 @@ class SignalWithDoubleQuoteInIt(TextSignal):
 
   @override
   def compute(self, data: Iterable[RichData]) -> Iterable[Optional[Item]]:
-    for d in data:
+    for _ in data:
       yield True
 
 

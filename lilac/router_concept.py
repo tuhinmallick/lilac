@@ -202,14 +202,13 @@ def get_concept_model(
   model = DISK_CONCEPT_MODEL_DB.sync(
     namespace, concept_name, embedding_name, user=user, create=create_if_not_exists
   )
-  model_info = ConceptModelInfo(
-    namespace=model.namespace,
-    concept_name=model.concept_name,
-    embedding_name=model.embedding_name,
-    version=model.version,
-    metrics=model.get_metrics(),
+  return ConceptModelInfo(
+      namespace=model.namespace,
+      concept_name=model.concept_name,
+      embedding_name=model.embedding_name,
+      version=model.version,
+      metrics=model.get_metrics(),
   )
-  return model_info
 
 
 @router.post(

@@ -66,9 +66,7 @@ class ClusterDBSCAN(VectorSignal):
     with DebugTimer('DBSCAN: Reading from vector store'):
       for vectors in span_vectors:
         all_spans.append([vector['span'] for vector in vectors])
-        for vector in vectors:
-          all_vectors.append(vector['vector'])
-
+        all_vectors.extend(vector['vector'] for vector in vectors)
     dbscan = DBSCAN(eps=DBSCAN_EPS, min_samples=MIN_SAMPLES, metric='cosine', n_jobs=-1)
     dbscan.fit(all_vectors)
     span_index = 0

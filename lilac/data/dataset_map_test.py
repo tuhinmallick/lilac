@@ -200,7 +200,7 @@ def test_map_job_id(
 
   dataset.map(_map_fn, output_column='map_id', num_jobs=3, execution_type=execution_type)
 
-  assert set(test_dask_logger.get_logs()) == set([0, 1, 2])
+  assert set(test_dask_logger.get_logs()) == {0, 1, 2}
 
 
 @pytest.mark.parametrize('num_jobs', [-1, 1, 2])
@@ -459,7 +459,7 @@ def test_map_continuation_overwrite(
   )
 
   # Map should be called for all ids.
-  assert set(sorted(test_dask_logger.get_logs())) == set([0, 1, 2])
+  assert set(sorted(test_dask_logger.get_logs())) == {0, 1, 2}
 
   assert dataset.manifest() == DatasetManifest(
     namespace=TEST_NAMESPACE,

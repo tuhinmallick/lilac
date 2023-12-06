@@ -56,9 +56,10 @@ class SpacyNER(TextSignal):
     text_data = (row if isinstance(row, str) else '' for row in data)
 
     for doc in self._nlp.pipe(text_data):
-      result = [span(ent.start_char, ent.end_char, {'label': ent.label_}) for ent in doc.ents]
-
-      if result:
+      if result := [
+          span(ent.start_char, ent.end_char, {'label': ent.label_})
+          for ent in doc.ents
+      ]:
         yield result
       else:
         yield None

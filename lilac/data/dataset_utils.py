@@ -104,9 +104,9 @@ def schema_contains_path(schema: Schema, path: PathTuple) -> bool:
       if current_field.repeated_field is None:
         return False
       current_field = current_field.repeated_field
+    elif current_field.fields is None or path_part not in current_field.fields:
+      return False
     else:
-      if current_field.fields is None or path_part not in current_field.fields:
-        return False
       current_field = current_field.fields[str(path_part)]
   return True
 
@@ -159,9 +159,6 @@ def _flat_embeddings(
   elif isinstance(input, list):
     for i, v in enumerate(input):
       yield from _flat_embeddings(v, (*path, i))
-  else:
-    # Ignore other primitives.
-    pass
 
 
 def write_embeddings_to_disk(
@@ -234,8 +231,7 @@ def write_items_to_parquet(
   writer = ParquetWriter(schema)
   writer.open(f)
   debug = env('DEBUG', False)
-  num_items = 0
-  for item in items:
+  for num_items, item in enumerate(items):
     # Add a rowid column.
     if ROWID not in item:
       item[ROWID] = secrets.token_urlsafe(nbytes=12)  # 16 base64 characters.
@@ -245,7 +241,6 @@ def write_items_to_parquet(
       except Exception as e:
         raise ValueError(f'Error validating item: {json.dumps(item)}') from e
     writer.write(item)
-    num_items += 1
   writer.close()
   f.close()
   return out_filename

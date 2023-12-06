@@ -55,8 +55,8 @@ def test_split_and_combine_text_embeddings_no_docs() -> None:
     return [np.ones(1) for _ in batch]
 
   result = list(compute_split_embeddings(docs, batch_size, embed_fn, char_splitter))
-  assert embed_fn_inputs == []
-  assert result == []
+  assert not embed_fn_inputs
+  assert not result
 
 
 def test_split_and_combine_text_embeddings_empty_docs() -> None:

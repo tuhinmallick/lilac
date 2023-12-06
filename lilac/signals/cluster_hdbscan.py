@@ -71,9 +71,7 @@ class ClusterHDBScan(VectorSignal):
     with DebugTimer('DBSCAN: Reading from vector store'):
       for vectors in span_vectors:
         all_spans.append([vector['span'] for vector in vectors])
-        for vector in vectors:
-          all_vectors.append(vector['vector'])
-
+        all_vectors.extend(vector['vector'] for vector in vectors)
     # Use UMAP to reduce the dimensionality before hdbscan to speed up clustering.
     # For details on hyperparameters, see:
     # https://umap-learn.readthedocs.io/en/latest/clustering.html

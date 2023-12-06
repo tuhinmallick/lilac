@@ -58,7 +58,7 @@ def _is_hash(content: str, value: str) -> bool:
   if not lines:
     return False
   target_line = lines[-1]
-  if len(value) in [32, 40, 64]:
+  if len(value) in {32, 40, 64}:
     # if 'sha' or 'md5' are in content:
     keywords = ['sha', 'md5', 'hash', 'byte']
     if any(x in target_line.lower() for x in keywords):

@@ -203,7 +203,6 @@ def load(
 
       # If signals are explicitly set, use only those.
       signals = d.signals or []
-      # If signals are not explicitly set, use the media paths and config.signals.
       if not signals:
         if d.settings and d.settings.ui:
           for path in d.settings.ui.media_paths or []:
@@ -216,7 +215,7 @@ def load(
       for s in signals:
         path_signals.setdefault(s.path, []).append(s)
 
-      for path, signals in path_signals.items():
+      for signals in path_signals.values():
         for s in signals:
           field = manifest.data_schema.get_field(s.path)
           signal_field = (field.fields or {}).get(s.signal.key(is_computed_signal=True))

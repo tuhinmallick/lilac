@@ -1,5 +1,6 @@
 """Tests for dataset.compute_signal() when signals are chained."""
 
+
 import re
 from typing import ClassVar, Iterable, List, Optional, cast
 
@@ -51,7 +52,7 @@ EMBEDDINGS: list[tuple[str, list[float]]] = [
   ('hello world2.', [2.0, 1.0, 1.0]),
 ]
 
-STR_EMBEDDINGS: dict[str, list[float]] = {text: embedding for text, embedding in EMBEDDINGS}
+STR_EMBEDDINGS: dict[str, list[float]] = dict(EMBEDDINGS)
 
 
 class TestSplitter(TextSignal):

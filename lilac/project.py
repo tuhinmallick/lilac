@@ -167,7 +167,7 @@ def delete_project_signal_config(
 def project_dir_from_args(project_dir_arg: str) -> str:
   """Returns the project directory from the command line args."""
   project_dir = project_dir_arg
-  if project_dir_arg == '':
+  if not project_dir:
     project_dir = env('LILAC_PROJECT_DIR', None) or env('LILAC_DATA_PATH', None)
   if not project_dir:
     project_dir = '.'

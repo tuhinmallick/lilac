@@ -1,4 +1,5 @@
 """Test the public REST API for signals."""
+
 import os
 from pathlib import Path
 from typing import ClassVar, Iterable, Optional
@@ -27,7 +28,7 @@ EMBEDDINGS: list[tuple[str, list[float]]] = [
   ('hello world2', [2.0, 1.0, 1.0]),
 ]
 
-STR_EMBEDDINGS: dict[str, list[float]] = {text: embedding for text, embedding in EMBEDDINGS}
+STR_EMBEDDINGS: dict[str, list[float]] = dict(EMBEDDINGS)
 
 
 class TestQueryAndLengthSignal(Signal):

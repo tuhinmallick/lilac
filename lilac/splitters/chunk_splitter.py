@@ -41,7 +41,7 @@ CHUNK_OVERLAP = 50
 
 
 def _sep_split(text: str, separator: str) -> list[TextChunk]:
-  if separator == '':
+  if not separator:
     # We need to split by char.
     return [(letter, (i, i + 1)) for i, letter in enumerate(text)]
 
@@ -82,7 +82,7 @@ def split_text(
   length_function: Callable[[str], int] = len,
 ) -> list[TextChunk]:
   """Split incoming text and return chunks."""
-  text = str(text)
+  text = text
 
   def _merge_splits(splits: Iterable[TextChunk], separator: str) -> list[TextChunk]:
     # We now want to combine these smaller pieces into medium size chunks to send to the LLM.
@@ -94,21 +94,21 @@ def split_text(
     for chunk in splits:
       text_chunk, _ = chunk
       _len = length_function(text_chunk)
-      if total + _len + (separator_len if len(current_doc) > 0 else 0) > chunk_size:
+      if total + _len + (separator_len if current_doc else 0) > chunk_size:
         if total > chunk_size:
           log(
             f'Created a chunk of size {total}, ' f'which is longer than the specified {chunk_size}'
           )
-        if len(current_doc) > 0:
+        if current_doc:
           doc = _join_chunks(current_doc, separator)
           if doc is not None:
             docs.append(doc)
           # Keep on popping if:
           # - we have a larger chunk than in the chunk overlap
           # - or if we still have any chunks and the length is long
-          while total > chunk_overlap or (
-            total + _len + (separator_len if len(current_doc) > 0 else 0) > chunk_size and total > 0
-          ):
+          while (total > chunk_overlap or total + _len +
+                 (separator_len if current_doc else 0) > chunk_size
+                 and total > 0):
             total -= length_function(current_doc[0][0]) + (
               separator_len if len(current_doc) > 1 else 0
             )
@@ -163,7 +163,7 @@ def _join_chunks(chunks: list[TextChunk], separator: str) -> Optional[TextChunk]
     separator = ''
   text = separator.join([text for text, _ in chunks])
   text = text.strip()
-  if text == '':
+  if not text:
     return None
 
   _, (first_span_start, _) = chunks[0]

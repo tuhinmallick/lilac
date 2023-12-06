@@ -40,13 +40,10 @@ def _deep_unflatten(
   """Unflattens a deeply flattened iterable according to the original iterable's structure."""
   if is_primitive_predicate(original_input):
     return next(flat_input)
-  else:
-    values: Iterable
-    if isinstance(original_input, dict):
-      values = original_input.values()
-    else:
-      values = cast(Iterable, original_input)
-    return [_deep_unflatten(flat_input, orig_elem, is_primitive_predicate) for orig_elem in values]
+  values: Iterable
+  values = (original_input.values() if isinstance(original_input, dict) else
+            cast(Iterable, original_input))
+  return [_deep_unflatten(flat_input, orig_elem, is_primitive_predicate) for orig_elem in values]
 
 
 def deep_unflatten(

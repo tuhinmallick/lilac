@@ -76,16 +76,14 @@ class LangDetectionSignal(TextSignal):
         text_span = text[prev_end:start]
         text_span = text_span.strip()
         if text_span:
-          lang_code = self._detect(text_span, langdetect)
-          if lang_code:
+          if lang_code := self._detect(text_span, langdetect):
             result.append(span(prev_end, start, {LANG_CODE: lang_code}))
         prev_end = end
 
       # Process the last chunk.
       text_span = text[prev_end:]
       if text_span.strip():
-        lang_code = self._detect(text_span, langdetect)
-        if lang_code:
+        if lang_code := self._detect(text_span, langdetect):
           result.append(span(prev_end, len(text), {LANG_CODE: lang_code}))
 
       yield result

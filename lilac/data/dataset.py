@@ -125,11 +125,24 @@ UnaryOp = Literal['exists', 'not_exists', None]
 ListOp = Literal['in', None]
 RawSqlOp = Literal['raw_sql']
 
-BINARY_OPS = set(['equals', 'not_equal', 'greater', 'greater_equal', 'less', 'less_equal'])
-STRING_OPS = set(['length_longer', 'length_shorter', 'ilike', 'regex_matches', 'not_regex_matches'])
-UNARY_OPS = set(['exists', 'not_exists'])
-LIST_OPS = set(['in'])
-RAW_SQL_OPS = set(['raw_sql'])
+BINARY_OPS = {
+    'equals',
+    'not_equal',
+    'greater',
+    'greater_equal',
+    'less',
+    'less_equal',
+}
+STRING_OPS = {
+    'length_longer',
+    'length_shorter',
+    'ilike',
+    'regex_matches',
+    'not_regex_matches',
+}
+UNARY_OPS = {'exists', 'not_exists'}
+LIST_OPS = {'in'}
+RAW_SQL_OPS = {'raw_sql'}
 
 
 class SortOrder(str, enum.Enum):
@@ -213,9 +226,7 @@ class Column(BaseModel):
   @classmethod
   def parse_signal_udf(cls, signal_udf: Optional[dict]) -> Optional[Signal]:
     """Parse a signal to its specific subclass instance."""
-    if not signal_udf:
-      return None
-    return resolve_signal(signal_udf)
+    return None if not signal_udf else resolve_signal(signal_udf)
 
 
 ColumnId = Union[Path, Column]
@@ -377,12 +388,13 @@ class Dataset(abc.ABC):
   def config(self) -> DatasetConfig:
     """Return the dataset config for this dataset."""
     project_config = read_project_config(get_project_dir())
-    dataset_config = get_dataset_config(project_config, self.namespace, self.dataset_name)
-    if not dataset_config:
+    if dataset_config := get_dataset_config(project_config, self.namespace,
+                                            self.dataset_name):
+      return dataset_config
+    else:
       raise ValueError(
         f'Dataset "{self.namespace}/{self.dataset_name}" not found in project config.'
       )
-    return dataset_config
 
   def settings(self) -> DatasetSettings:
     """Return the persistent settings for the dataset."""
@@ -791,11 +803,11 @@ def default_settings(dataset: Dataset) -> DatasetSettings:
     s.path for s in stats if s.avg_text_length and s.avg_text_length >= MEDIA_AVG_TEXT_LEN
   ]
   if not media_paths:
-    # If there are no long text fields, pick the longest of the short text field.
-    sorted_stats = sorted(
-      [s for s in stats if s.avg_text_length], key=lambda s: s.avg_text_length or -1.0, reverse=True
-    )
-    if sorted_stats:
+    if sorted_stats := sorted(
+        [s for s in stats if s.avg_text_length],
+        key=lambda s: s.avg_text_length or -1.0,
+        reverse=True,
+    ):
       media_paths = [sorted_stats[0].path]
 
   return DatasetSettings(ui=DatasetUISettings(media_paths=media_paths))
@@ -815,7 +827,7 @@ def dataset_config_from_manifest(manifest: DatasetManifest) -> DatasetConfig:
   signals: list[tuple[PathTuple, Signal]] = []
   embeddings: list[tuple[PathTuple, TextEmbeddingSignal]] = []
   for path, s in all_signals:
-    source_path = path[0:-1]  # Remove the signal name from the path.
+    source_path = path[:-1]
     if isinstance(s, TextEmbeddingSignal):
       embeddings.append((source_path, s))
     else:

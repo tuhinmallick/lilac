@@ -142,14 +142,11 @@ def deploy_staging(
   run('poetry build -f wheel')
   run(f'poetry version "{current_lilac_version}"')
 
-  for upload_file in os.listdir(PY_DIST_DIR):
-    operations.append(
+  operations.extend(
       CommitOperationAdd(
-        path_in_repo=os.path.join(PY_DIST_DIR, upload_file),
-        path_or_fileobj=os.path.join(PY_DIST_DIR, upload_file),
-      )
-    )
-
+          path_in_repo=os.path.join(PY_DIST_DIR, upload_file),
+          path_or_fileobj=os.path.join(PY_DIST_DIR, upload_file),
+      ) for upload_file in os.listdir(PY_DIST_DIR))
   # Atomically commit all the operations so we don't kick the server multiple times.
   hf_api.create_commit(
     repo_id=hf_space,

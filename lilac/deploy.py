@@ -170,13 +170,11 @@ def deploy_project_operations(
   log()
   # Upload the hf_docker directory.
   hf_docker_dir = str(resources.files('lilac').joinpath('hf_docker'))
-  for upload_file in os.listdir(hf_docker_dir):
-    operations.append(
+  operations.extend(
       CommitOperationAdd(
-        path_in_repo=upload_file, path_or_fileobj=str(os.path.join(hf_docker_dir, upload_file))
-      )
-    )
-
+          path_in_repo=upload_file,
+          path_or_fileobj=str(os.path.join(hf_docker_dir, upload_file)),
+      ) for upload_file in os.listdir(hf_docker_dir))
   ##
   ##  Create the empty wheel directory. If uploading a local wheel, use scripts.deploy_staging.
   ##
@@ -206,21 +204,15 @@ def deploy_project_operations(
   ##  to storage when the docker image boots up.
   ##
   if (lilac_hf_datasets and not skip_data_upload) or load_on_space:
-    readme = (
-      '---\n'
-      + to_yaml(
-        {
-          'title': 'Lilac',
-          'emoji': '🌷',
-          'colorFrom': 'purple',
-          'colorTo': 'purple',
-          'sdk': 'docker',
-          'app_port': 5432,
-          'datasets': [d for d in lilac_hf_datasets],
-        }
-      )
-      + '\n---'
-    )
+    readme = ('---\n' + to_yaml({
+        'title': 'Lilac',
+        'emoji': '🌷',
+        'colorFrom': 'purple',
+        'colorTo': 'purple',
+        'sdk': 'docker',
+        'app_port': 5432,
+        'datasets': list(lilac_hf_datasets),
+    })) + '\n---'
     readme_filename = 'README.md'
     if hf_api.file_exists(hf_space, readme_filename, repo_type='space'):
       operations.append(CommitOperationDelete(path_in_repo=readme_filename))
@@ -346,8 +338,8 @@ def _upload_cache(hf_space: str, project_dir: str, concepts: Optional[list[str]]
   if os.path.exists(cache_dir):
     remote_cache_dir = get_lilac_cache_dir(REMOTE_DATA_DIR)
 
-    files_info = list(list_files_info(hf_space, f'{remote_cache_dir}/', repo_type='space'))
-    if files_info:
+    if files_info := list(
+        list_files_info(hf_space, f'{remote_cache_dir}/', repo_type='space')):
       operations.append(CommitOperationDelete(path_in_repo=f'{remote_cache_dir}/'))
 
     for root, _, files in os.walk(cache_dir):
@@ -411,19 +403,16 @@ def _upload_concepts(
     concept_dir = get_concept_output_dir(project_dir, namespace, name)
     remote_concept_dir = get_concept_output_dir(REMOTE_DATA_DIR, namespace, name)
 
-    files_info = list(list_files_info(hf_space, remote_concept_dir, repo_type='space'))
-    if files_info:
+    if files_info := list(
+        list_files_info(hf_space, remote_concept_dir, repo_type='space')):
       operations.append(CommitOperationDelete(path_in_repo=f'{remote_concept_dir}/'))
 
-    for upload_file in os.listdir(concept_dir):
-      operations.append(
+    operations.extend(
         CommitOperationAdd(
-          # The path in the remote doesn't os.path.join as it is specific to Linux.
-          path_in_repo=f'{remote_concept_dir}/{upload_file}',
-          path_or_fileobj=os.path.join(concept_dir, upload_file),
-        )
-      )
-
+            # The path in the remote doesn't os.path.join as it is specific to Linux.
+            path_in_repo=f'{remote_concept_dir}/{upload_file}',
+            path_or_fileobj=os.path.join(concept_dir, upload_file),
+        ) for upload_file in os.listdir(concept_dir))
   log('Uploading concepts: ', concepts)
   log()
   return operations, concepts

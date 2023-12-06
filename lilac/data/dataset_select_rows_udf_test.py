@@ -1,5 +1,6 @@
 """Tests for dataset.select_rows(udf_col)."""
 
+
 from typing import ClassVar, Iterable, Optional, cast
 
 import numpy as np
@@ -40,7 +41,7 @@ EMBEDDINGS: list[tuple[str, list[float]]] = [
   ('hello world2.', [2.0, 1.0, 1.0]),
 ]
 
-STR_EMBEDDINGS: dict[str, list[float]] = {text: embedding for text, embedding in EMBEDDINGS}
+STR_EMBEDDINGS: dict[str, list[float]] = dict(EMBEDDINGS)
 
 
 class TestEmbedding(TextEmbeddingSignal):
@@ -113,7 +114,7 @@ class ComputedKeySignal(TextSignal):
 
   @override
   def compute(self, data: Iterable[RichData]) -> Iterable[Optional[Item]]:
-    for text in data:
+    for _ in data:
       yield 1
 
   def key(self, is_computed_signal: Optional[bool] = False) -> str:
